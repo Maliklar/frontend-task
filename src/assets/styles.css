@@ -1,0 +1,18 @@
+/* Global Styles */
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap');
+*{
+    font-family: 'Lato', sans-serif;
+    box-sizing: content-box;
+}
+body{
+    margin: 0px;
+    padding: 0px;
+}
+
+.cursor-pointer{
+    cursor: pointer;
+}
+
+.fa-solid{
+    cursor: pointer;
+}
