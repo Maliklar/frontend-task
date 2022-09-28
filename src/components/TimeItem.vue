@@ -4,14 +4,11 @@
         :class="{active: active, disabled: disabled}"
         @click="!disabled ? activate() : null"
         v-text="timeFormat"
-    >
-
-    </div>
+    ></div>
 </template>
 
 <script>
 import convertTime from "convert-time";
-
 export default {
     props: {
         time: Object,
@@ -24,14 +21,14 @@ export default {
     },
     computed: {
         timeFormat() {
-            return convertTime(new Date(+this.time.from_unix * 1000).getHours() + ":00");
+            const time = new Date(+this.time.from_unix * 1000);
+            return convertTime(`${time.getHours()}:${time.getMinutes()}`);
         }
     },
     methods: {
         activate() {
             this.$emit("timeClicked", this.time);
             this.active = true;
-
         },
         deactivate() {
             this.active = false;
@@ -51,11 +48,17 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
 }
 
 .time-item.active {
-    background-color: #4894FE;
-    border-radius: 9px;
+    background-color: var(--primary);
     color: white;
+    cursor: pointer;
+}
+
+.time-item.disabled {
+    cursor: default;
+    box-shadow: none;
 }
 </style>

@@ -23,9 +23,9 @@ export default {
     props: {
         schedule: Object,
     },
-
     created() {
-        if (!(this.unixDate <= (this.currentUnixDate + this.oneDay)))
+        // Disabled appointments within 24 hours ahead of current time
+        if (!(this.unixDate <= (this.currentUnixDate)))
             this.disabled = false;
     },
 
@@ -39,9 +39,7 @@ export default {
         availability() {
             return this.schedule.availability;
         },
-        oneDay() {
-            return 86400;
-        },
+
         currentUnixDate() {
             return Math.floor(new Date().getTime() / 1000);
         },
@@ -105,7 +103,7 @@ export default {
 }
 
 .date-item.active {
-    background-color: #4894FE;
+    background-color: var(--primary);
     border-radius: 9px;
     color: white;
 }

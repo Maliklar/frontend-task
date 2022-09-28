@@ -1,27 +1,38 @@
 <template>
-    <div class="card-view">
-        <h2 class="card-title">Schedule Appointment</h2>
+    <div
+        class="card-view"
+        v-if="schedule"
+    >
+        <h2
+            class="card-title"
+            v-text="'Schedule Appointment'"
+        ></h2>
         <div class="card-body">
             <div class="top">
-                <strong>Fees</strong>
-                <span>85$</span>
+                <strong v-text="'Fees'"></strong>
+                <span v-text="'85$'"></span>
             </div>
             <div class="divider"></div>
             <div class="middle">
-                <strong>Schedule</strong>
+                <div class="middle-titles">
+                    <strong v-text="'Schedule'"></strong>
+                    <span
+                        v-if="selectedDate"
+                        class="disabled temp-messages"
+                        v-text="selectedDate.availability.label"
+                    ></span>
+                </div>
                 <div class="middle-content">
-
                     <font-awesome-icon
                         icon="fa-solid fa-chevron-left"
                         class="cursor-pointer"
                         @click="previous"
                         :class="{disabled: previousDisabled}"
                     />
-
                     <div class="dates-picker">
                         <DateItem
-                            ref="but"
-                            v-for="schedule in currentItems"
+                            ref="dateRef"
+                            v-for="schedule in currentDates"
                             :key="schedule"
                             :schedule="schedule"
                             @dateClicked="dateClicked"
@@ -33,16 +44,17 @@
                         class="cursor-pointer"
                         :class="{disabled: nextDisabled}"
                     />
-
                 </div>
             </div>
             <div class="bottom">
-                <strong>Choose time</strong>
+                <strong v-text="'Choose time'"></strong>
                 <div class="bottom-content">
-                    <div class="time-picker">
-
+                    <div
+                        class="time-picker"
+                        v-if="availableTimes.length || unavailableTimes.length"
+                    >
                         <TimeItem
-                            v-for="time in availableDates"
+                            v-for="time in availableTimes"
                             :key="time"
                             :time="time"
                             ref="timeRef"
@@ -50,85 +62,114 @@
                             :disabled="false"
                         />
                         <TimeItem
-                            v-for="time in unavailableDates"
+                            v-for="time in unavailableTimes"
                             :key="time"
                             :time="time"
                             :disabled="true"
                         />
                     </div>
+                    <span
+                        class="disabled temp-messages"
+                        v-else
+                        v-text="'Please selected a date'"
+                    > </span>
                 </div>
             </div>
-
         </div>
         <button
-            class="card-button"
             :class="{disabled: !buttonDisabled}"
-        >Book Appointment</button>
+            @click="submit"
+            v-text="'Book Appointment'"
+        ></button>
+
+        <SubmitBanner
+            ref="bannerRef"
+            :selectedTime="selectedTime"
+            :selectedDate="selectedDate"
+        />
+    </div>
+    <div v-else>
+        <img
+            src="../assets/loading.svg"
+            alt="Loading"
+        />
     </div>
 </template>
 
 <script>
 import DateItem from './DateItem.vue';
 import TimeItem from "./TimeItem.vue";
+import SubmitBanner from './SubmitBanner.vue';
 export default {
     name: "card-component",
-    async created() {
-        await fetch("https://cura-front-end-test.herokuapp.com")
+    created() {
+        fetch("https://cura-front-end-test.herokuapp.com")
             .then(res => res.json())
             .then(data => JSON.parse(data))
-            .then(data => this.schedule = data.schedule);
-        this.currentItems = this.schedule.slice(0, 5);
+            .then(data => {
+                this.schedule = data.schedule;
+                this.currentDates = this.schedule.slice(0, 5);
+            });
     },
 
     methods: {
         dateClicked(availability) {
             this.selectedTime = null;
 
-            this.$refs.but.forEach(b => b.deactivate());
-            this.availableDates = [];
-            this.unavailableDates = [];
+            this.$refs.dateRef.forEach(b => b.deactivate());
+            this.availableTimes = [];
+            this.unavailableTimes = [];
             this.selectedDate = availability;
 
             availability.available.forEach(time => {
-                this.availableDates.push(time);
+                this.availableTimes.push(time);
             });
 
             availability.unavailable.forEach(time => {
-                this.unavailableDates.push(time);
+                this.unavailableTimes.push(time);
             });
         },
 
         timeClicked(selected) {
             this.$refs.timeRef.forEach(time => time.deactivate());
             this.selectedTime = selected;
-            console.log(this.selectedTime, this.selectedDate);
         },
 
+        // Show next dates
         next() {
             if (this.currentIndex + 5 >= this.schedule.length)
                 return;
-
             this.currentIndex += 5;
-
-            this.currentItems = this.schedule.slice(this.currentIndex, this.currentIndex + 5);
+            this.currentDates = this.schedule.slice(this.currentIndex, this.currentIndex + 5);
         },
         previous() {
             if (this.currentIndex - 5 < 0)
                 return;
-            this.currentItems = this.schedule.slice(this.currentIndex - 5, this.currentIndex);
+            this.currentDates = this.schedule.slice(this.currentIndex - 5, this.currentIndex);
             this.currentIndex -= 5;
         },
+
+
+        submit() {
+            if (this.selectedTime && this.selectedDate) {
+                //TODO: Send data to backend here using POST
+                // Show appointment banner
+                this.$refs.bannerRef.closed = false;
+
+            }
+        }
     },
     data() {
         return {
-            schedule: [],
-            currentItems: [],
+            schedule: null,
+            currentDates: [],
             currentIndex: 0,
-            unavailableDates: [],
-            availableDates: [],
+            unavailableTimes: [],
+            availableTimes: [],
             timeActive: false,
             selectedTime: null,
             selectedDate: null,
+            bannerActivation: false,
         };
     },
 
@@ -143,7 +184,7 @@ export default {
             return this.selectedTime && this.selectedDate;
         }
     },
-    components: { DateItem, TimeItem }
+    components: { DateItem, TimeItem, SubmitBanner }
 }
 </script>
 
@@ -161,6 +202,7 @@ h2 {
 
 .disabled {
     cursor: default;
+    box-shadow: none;
     opacity: 0.5;
 }
 
@@ -172,6 +214,15 @@ h2 {
     column-gap: 10px;
 }
 
+.middle-titles {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.temp-messages {
+    font-size: 0.8rem;
+}
 
 
 .dates-picker {
@@ -229,26 +280,12 @@ h2 {
     gap: 19px;
 }
 
-.card-button {
-    background-color: #4894FE;
-    color: white;
-    border: none;
-    font-weight: 700;
-    font-size: 16px;
-    line-height: 19px;
-    text-align: center;
-    padding: 17px;
-    border-radius: 14px;
-}
 
-.card-button.disabled {
-    background-color: gray;
-    color: black;
-}
+
 
 .card-body {
     position: relative;
-    border: 1px solid #E1E1E1;
+    border: 1px solid var(--border);
     border-radius: 10px;
     padding: 27px 20px;
     gap: 16px;
@@ -270,7 +307,7 @@ span {
 .divider {
     max-width: 90%;
     height: 1px;
-    background-color: #E1E1E1;
+    background-color: var(--border);
 }
 
 strong {

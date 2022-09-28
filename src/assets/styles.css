@@ -1,8 +1,16 @@
 /* Global Styles */
 @import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap');
+
+:root{
+    /* Colors */
+    --border: #E1E1E1;
+    --primary: #4894FE;
+    font-size: 16px;
+}
 *{
     font-family: 'Lato', sans-serif;
     box-sizing: content-box;
+    transition: all 0.3s;
 }
 body{
     margin: 0px;
@@ -13,6 +21,20 @@ body{
     cursor: pointer;
 }
 
-.fa-solid{
+button {
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    font-weight: 700;
+    font-size: 16px;
+    line-height: 19px;
+    text-align: center;
+    padding: 17px;
+    border-radius: 14px;
     cursor: pointer;
+}
+
+button.disabled {
+    background-color: gray;
+    cursor: default;
 }
