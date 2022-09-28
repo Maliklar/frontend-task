@@ -27,6 +27,11 @@ export default {
         // Disabled appointments within 24 hours ahead of current time
         if (!(this.unixDate <= (this.currentUnixDate)))
             this.disabled = false;
+
+        // Disable appointments that are after more than 30 days
+        const timeDifference = this.unixDate - this.currentUnixDate;
+        if (timeDifference >= 2548800) // 29 days and 12 hours
+            this.disabled = true;
     },
 
     data() {
